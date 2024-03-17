@@ -1,4 +1,4 @@
-### hass_zabbix_api
+# hass_zabbix_api ###
 Custom Integration to import Zabbix Services as HA Sensors
 
 There already is a Zabbix integration in homeassistant but its focus is on publishing homeassistant states to Zabbix. It also can import zabbix states to homeassistant sensors, but you need to configure Zabbix host ids in HA for this and it is limited to importing Zabbix triggers.
