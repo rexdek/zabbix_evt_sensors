@@ -6,7 +6,7 @@ There already is a Zabbix integration in homeassistant but its focus is on publi
 As I needed to import the states of Zabbix services as homeassistant sensors I made up this custom component.
 
 ## Installation
-Use HACS to import this repository and install the zabbix_api custom component to homeassistant.
+Use HACS to import this repository and install the zabbix_evt_sensors custom component to homeassistant.
 
 In Homeassistant -> Settings -> Devices -> Add Integration choose zabbix_problems.
 
