@@ -5,14 +5,17 @@ There already is a Zabbix integration in homeassistant but its focus is on publi
 
 As I needed to import the states of Zabbix services as homeassistant sensors I made up this custom component.
 
+## Prerequisite
+Create Zabbix services in Zabbix (WebUI > Services > Services > Edit > Create Service)
+
 ## Installation
 Use HACS to import this repository and install the zabbix_evt_sensors custom component to homeassistant.
 
-In Homeassistant -> Settings -> Devices -> Add Integration choose zabbix_problems.
+In Homeassistant -> Settings -> Devices -> Add Integration choose "Zabbix Event Sensors".
 
-In the menu configure the Zabbix hostname or IP, an API Token (must have been configured in Zabbix before) and optionally a port and whether SSL is used for the connection. Please note that the Zabbix vertificate currently is not verified.
+In the menu configure the Zabbix hostname or IP, an API Token (must have been configured in Zabbix before) and optionally a port and whether SSL is used for the connection. Please note that the Zabbix certificate currently is not verified.
 
-After submitting you will have a new "Zabbix API" device under integrations and additionally the Zabbix services as sensor entities. The sensor entities' names are made up by concatenating these elements:
+After submitting you will have a new "Zabbix Event Sensors" device under integrations and additionally the Zabbix services as sensor entities. The sensor entities' names are made up by concatenating these elements:
 
     - sensor.
     
@@ -21,5 +24,4 @@ After submitting you will have a new "Zabbix API" device under integrations and 
     - zabbix_host_name (from config flow)
     
     - zabbix service name (from Zabbix)
-
     
