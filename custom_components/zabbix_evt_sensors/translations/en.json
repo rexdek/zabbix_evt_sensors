@@ -13,8 +13,9 @@
                 "data": {
                     "SSL": "Uses an SSL certificate",
                     "host": "Host",
-                    "api_token": "API Token",
-                    "username": "Username"
+                    "path": "Path (can be empty)",
+                    "port": "Port",
+                    "api_token": "API Token"
                 }
             }
         }

@@ -6,9 +6,10 @@ import logging
 
 import urllib3
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_API_TOKEN, CONF_HOST, CONF_PORT, CONF_SSL, Platform
+from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
+from homeassistant.const import CONF_API_TOKEN, CONF_HOST, CONF_PATH, CONF_PORT, CONF_SSL, Platform
 from homeassistant.core import HomeAssistant
+from pyzabbix import ZabbixAPIException
 
 from .const import DOMAIN
 from .zabbix import Zbx
@@ -27,10 +28,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         Zbx,
         entry.data[CONF_HOST],
         entry.data[CONF_API_TOKEN],
+        entry.data[CONF_PATH],
         entry.data[CONF_PORT],
-        entry.data[CONF_SSL],
+        entry.data[CONF_SSL]
     )
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    try:
+        #await hass.async_add_executor_job(hass.data[DOMAIN][entry.entry_id].services)
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    except ZabbixAPIException as e:
+        raise ConfigEntryNotReady(e)
     return True
 
 

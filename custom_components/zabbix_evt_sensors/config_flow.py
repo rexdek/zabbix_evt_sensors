@@ -8,10 +8,11 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.const import CONF_API_TOKEN, CONF_HOST, CONF_PORT, CONF_SSL
+from homeassistant.const import CONF_API_TOKEN, CONF_HOST, CONF_PATH, CONF_PORT, CONF_SSL
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
+from pyzabbix import ZabbixAPIException
 
 from .const import DEFAULT_NAME, DOMAIN
 from .zabbix import Zbx
@@ -21,29 +22,28 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_HOST, default="zabbix.rexkramer.de"): str,
-        vol.Required(CONF_API_TOKEN): str,
+        vol.Optional(CONF_PATH, default=""): str,
         vol.Required(CONF_PORT, default=443): int,
         vol.Required(CONF_SSL, default=True): bool,
+        vol.Required(CONF_API_TOKEN): str,
     }
 )
 
 
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> None:
     """Validate the user input allows us to connect.
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-    if not await hass.async_add_executor_job(
+    zbx = await hass.async_add_executor_job(
         Zbx,
         data[CONF_HOST],
         data[CONF_API_TOKEN],
+        data[CONF_PATH],
         data[CONF_PORT],
         data[CONF_SSL],
-    ):
-        raise InvalidAuth
-
-    # Return info that you want to store in the config entry.
-    return {"title": DEFAULT_NAME}
+    )
+    await hass.async_add_executor_job(zbx.services)
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -59,10 +59,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             try:
                 await validate_input(self.hass, user_input)
-            except CannotConnect:
+            except ZabbixAPIException:
                 errors["base"] = "cannot_connect"
-            except InvalidAuth:
-                errors["base"] = "invalid_auth"
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"

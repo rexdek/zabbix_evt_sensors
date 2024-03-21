@@ -3,7 +3,9 @@ import contextlib
 from itertools import chain
 import logging
 
-from pyzabbix.api import ZabbixAPI
+from homeassistant.config_entries import ConfigEntryNotReady
+from pyzabbix.api import ZabbixAPI, ZabbixAPIException
+
 import urllib3
 
 urllib3.disable_warnings()
@@ -43,17 +45,19 @@ class ZbxEvent:
 class Zbx:
     """Zbx Class."""
 
-    def __init__(self, host, api_token, port=443, ssl=True):
+    def __init__(self, host, api_token, path="", port=443, ssl=True):
         """Initialize the class."""
         self.host = host
         self.api_token = api_token
+        self.path = path
         self.port = port
         self.ssl = ssl
         self.protocol = "https" if self.ssl else "http"
-        self.url = f"{self.protocol}://{self.host}:{self.port}"
+        self.url = f"{self.protocol}://{self.host}:{self.port}/{self.path}"
         self.zapi = ZabbixAPI(self.url)
         self.zapi.session.verify = False
         self.zapi.login(api_token=self.api_token)
+        self.version = self.zapi.version.public
 
     def _get_problems(self):
         """Get Zabbix problems."""
@@ -98,7 +102,7 @@ class Zbx:
 
         return eidmap
 
-    def output(self, data_dict):
+    def _output(self, data_dict):
         """Output data."""
         eids = list(chain.from_iterable(data_dict.values()))
         eidmap = self._get_eidmap(eids)
@@ -109,8 +113,14 @@ class Zbx:
 
     def problems(self):
         """Output zabbix problems."""
-        return self.output(self._get_problems())
+        return self._output(self._get_problems())
 
     def services(self):
         """Output zabbix services."""
-        return self.output(self._get_svcs())
+        return self._output(self._get_svcs())
+
+
+if __name__ == '__main__':
+    z = Zbx('zabbix.rexkramer.de', 'x72b241753ea3c687f32051abaa6590d0bb64bd244c467ea1621591e420cfdb6d')
+    print(z.version)
+    print(z.services())
