@@ -1,4 +1,4 @@
-"""Config flow for zabbix_problems integration."""
+"""Config flow for zabbix_evt_sensors integration."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 from pyzabbix import ZabbixAPIException
+from requests.exceptions import ConnectionError
 
 from .const import DEFAULT_NAME, DOMAIN
 from .zabbix import Zbx
@@ -47,7 +48,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> None:
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for zabbix_problems."""
+    """Handle a config flow for zabbix_evt_sensors."""
 
     VERSION = 1
 
@@ -57,9 +58,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle the initial step."""
         errors: dict[str, str] = {}
         if user_input is not None:
+            await self.async_set_unique_id(user_input[CONF_HOST])
+            self._abort_if_unique_id_configured()
             try:
                 await validate_input(self.hass, user_input)
             except ZabbixAPIException:
+                errors["base"] = "invalid_auth"
+            except ConnectionError:
                 errors["base"] = "cannot_connect"
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception")

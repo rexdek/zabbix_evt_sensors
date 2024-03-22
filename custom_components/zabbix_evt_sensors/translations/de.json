@@ -1,0 +1,23 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Host bereits konfiguriert"
+        },
+        "error": {
+            "invalid_auth": "Zabbix Fehler, vermutlich falsches Token",
+            "cannot_connect": "HTTP Verbindungsproblem",
+            "unknown": "Unbekannter Fehler"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "ssl": "TLS",
+                    "host": "Host",
+                    "path": "Pfad (kann frei bleiben)",
+                    "port": "Port",
+                    "api_token": "API Token"
+                }
+            }
+        }
+    }
+}

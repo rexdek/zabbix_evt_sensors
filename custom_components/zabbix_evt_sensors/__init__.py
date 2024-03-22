@@ -1,4 +1,4 @@
-"""The zabbix_problems integration."""
+"""The zabbix_evt_sensors integration."""
 
 from __future__ import annotations
 
@@ -33,7 +33,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_SSL]
     )
     try:
-        #await hass.async_add_executor_job(hass.data[DOMAIN][entry.entry_id].services)
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     except ZabbixAPIException as e:
         raise ConfigEntryNotReady(e)

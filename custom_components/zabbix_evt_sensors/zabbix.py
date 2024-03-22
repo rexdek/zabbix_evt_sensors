@@ -3,14 +3,12 @@ import contextlib
 from itertools import chain
 import logging
 
-from homeassistant.config_entries import ConfigEntryNotReady
-from pyzabbix.api import ZabbixAPI, ZabbixAPIException
+from pyzabbix.api import ZabbixAPI
 
 import urllib3
 
 urllib3.disable_warnings()
 
-logging.basicConfig(level=logging.INFO)
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -118,9 +116,3 @@ class Zbx:
     def services(self):
         """Output zabbix services."""
         return self._output(self._get_svcs())
-
-
-if __name__ == '__main__':
-    z = Zbx('zabbix.rexkramer.de', 'x72b241753ea3c687f32051abaa6590d0bb64bd244c467ea1621591e420cfdb6d')
-    print(z.version)
-    print(z.services())

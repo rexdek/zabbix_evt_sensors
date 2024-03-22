@@ -4,14 +4,14 @@
             "already_configured": "Device is already configured"
         },
         "error": {
-            "cannot_connect": "Failed to connect",
-            "invalid_auth": "Invalid authentication",
+            "invalid_auth": "Zabbix failure, probably wrong token",
+            "cannot_connect": "HTTP connection failure",
             "unknown": "Unexpected error"
         },
         "step": {
             "user": {
                 "data": {
-                    "SSL": "Uses an SSL certificate",
+                    "ssl": "Use TLS",
                     "host": "Host",
                     "path": "Path (can be empty)",
                     "port": "Port",
