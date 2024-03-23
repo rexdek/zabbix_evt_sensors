@@ -7,7 +7,23 @@
           "username": "[%key:common::config_flow::data::username%]",
           "password": "[%key:common::config_flow::data::password%]",
           "ssl": "[%key:common::config_flow::data::ssl%]"
-        }
+        },
+        "description": "[%key:common::config_flow::description%]"
+      },
+      "sensors_services": {
+        "data": {
+          "enabled": "[%key:common::config_flow::data::choose%]",
+          "prefix": "[%key:common::config_flow::data::prefix%]"
+        },
+        "description": "[%key:common::config_flow::description%]"
+      },
+      "sensors_tagged_problems": {
+        "data": {
+          "tag": "[%key:common::config_flow::data::tag%]",
+          "value": "[%key:common::config_flow::data::value%]",
+          "stop": "[%key:common::config_flow::data::value%]
+        },
+        "description": "[%key:common::config_flow::description%]"
       }
     },
     "error": {

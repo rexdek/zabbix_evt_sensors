@@ -116,3 +116,8 @@ class Zbx:
     def services(self):
         """Output zabbix services."""
         return self._output(self._get_svcs())
+
+
+if __name__ == "__main__":
+    z = Zbx('zabbix.rexkramer.de', '72b241753ea3c687f32051abaa6590d0bb64bd244c467ea1621591e420cfdb6d')
+    print(z.problems())

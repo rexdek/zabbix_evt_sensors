@@ -35,7 +35,7 @@ async def async_setup_entry(
     )
     await coordinator.async_config_entry_first_refresh()
     for zbx_svc in coordinator.data:
-        async_add_entities([ZabbixProblemSensor(coordinator, zbx_svc)])
+        async_add_entities([ZabbixProblemSensor(coordinator, zbx_svc, entry.data["services"]["prefix"])])
 
 
 class ZabbixProblemSensor(CoordinatorEntity, SensorEntity):
@@ -45,7 +45,7 @@ class ZabbixProblemSensor(CoordinatorEntity, SensorEntity):
     _attr_icon = "mdi:alpha-z-box"
     _attr_name = None
 
-    def __init__(self, coordinator, zbx_svc) -> None:
+    def __init__(self, coordinator, zbx_svc, prefix) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._attr_name = zbx_svc
@@ -53,7 +53,8 @@ class ZabbixProblemSensor(CoordinatorEntity, SensorEntity):
         self._attr_unique_id = f"zbx_{coordinator.zbx.host}_{self._attr_name}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.zbx.host)},
-            name=coordinator.zbx.host,
+            #name=coordinator.zbx.host,
+            name=f'{prefix}_svc',
             configuration_url=coordinator.zbx.url,
             manufacturer="Zabbix SIA",
             sw_version=coordinator.zbx.zapi.version.public,
