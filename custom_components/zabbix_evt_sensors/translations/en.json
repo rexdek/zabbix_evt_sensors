@@ -16,7 +16,23 @@
                     "path": "Path (can be empty)",
                     "port": "Port",
                     "api_token": "API Token"
-                }
+                },
+                "description": "Connection parameters for Zabbix host"
+            },
+            "sensors_services": {
+                "data": {
+                    "enabled": "Enable",
+                    "prefix": "Sensor prefix (default: zabbix hostname)"
+                },
+                "description": "Setup Zabbix services as Home Assistant sensors. All Zabbix services will be imported. Sensor names will be prefixed with value specified below (default: Zabbix hostname)"
+            },
+            "sensors_tagged_problems": {
+                "data": {
+                    "tag": "Zabbix problem tag name",
+                    "value": "Zabbix problem tag value",
+                    "stop": "Finish adding Zabbix problem sensors"
+                },
+                "description": "Setup sensor that reflects zabbix tagged problems (leave empty if finished)"
             }
         }
     }

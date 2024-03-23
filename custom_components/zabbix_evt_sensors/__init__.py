@@ -26,11 +26,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = await hass.async_add_executor_job(
         Zbx,
-        entry.data[CONF_HOST],
-        entry.data[CONF_API_TOKEN],
-        entry.data[CONF_PATH],
-        entry.data[CONF_PORT],
-        entry.data[CONF_SSL]
+        entry.data["conf"][CONF_HOST],
+        entry.data["conf"][CONF_API_TOKEN],
+        entry.data["conf"][CONF_PATH],
+        entry.data["conf"][CONF_PORT],
+        entry.data["conf"][CONF_SSL]
     )
     try:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
