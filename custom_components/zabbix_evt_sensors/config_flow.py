@@ -1,12 +1,8 @@
 """Config flow for zabbix_evt_sensors integration."""
-
 from __future__ import annotations
-
 import logging
 from typing import Any
-
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.const import (
     CONF_API_TOKEN, CONF_HOST, CONF_PATH,
@@ -17,7 +13,6 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 from pyzabbix import ZabbixAPIException
 from requests.exceptions import ConnectionError
-
 from .const import DEFAULT_NAME, DOMAIN, CONFIG_KEY, PROBLEMS_KEY, SERVICES_KEY
 from .zabbix import Zbx
 
