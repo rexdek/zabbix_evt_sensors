@@ -1,16 +1,11 @@
 """The zabbix_evt_sensors integration."""
-
 from __future__ import annotations
-
 import logging
-
 import urllib3
-
 from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
 from homeassistant.const import CONF_API_TOKEN, CONF_HOST, CONF_PATH, CONF_PORT, CONF_SSL, Platform
 from homeassistant.core import HomeAssistant
 from pyzabbix import ZabbixAPIException
-
 from .const import DOMAIN, CONFIG_KEY, SERVICES_KEY, PROBLEMS_KEY
 from .zabbix import Zbx
 

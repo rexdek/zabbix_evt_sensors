@@ -33,8 +33,11 @@ async def async_setup_entry(
         update_interval=datetime.timedelta(seconds=3),
     )
     await coordinator.async_config_entry_first_refresh()
-    for zbx_svc in coordinator.data[SERVICES_KEY]:
-        async_add_entities([ZabbixServiceSensor(coordinator, zbx_svc, entry.data["prefix"])])
+    # import all Zabbix services as service sensors if enabled in config_flow
+    if entry.data[SERVICES_KEY]:
+        async_add_entities([ZabbixServiceSensor(coordinator, zbx_svc, entry.data["prefix"])
+                            for zbx_svc in coordinator.data[SERVICES_KEY]])
+    # import only configured tag:value pairs as problem sensors
     for zbx_prb in entry.data[PROBLEMS_KEY]:
         async_add_entities([ZabbixProblemSensor(coordinator, zbx_prb, entry.data["prefix"])])
 
@@ -105,6 +108,3 @@ class ZabbixUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         return {SERVICES_KEY: await self.hass.async_add_executor_job(self.zbx.services),
                 PROBLEMS_KEY: await self.hass.async_add_executor_job(self.zbx.problems)}
-        # svcs = await self.hass.async_add_executor_job(self.zbx.services)
-        # prbs = await self.hass.async_add_executor_job(self.zbx.problems)
-        # return await {SERVICES_KEY: svcs, PROBLEMS_KEY: prbs}
