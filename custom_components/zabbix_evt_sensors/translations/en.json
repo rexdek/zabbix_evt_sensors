@@ -10,29 +10,30 @@
         },
         "step": {
             "user": {
+                "description": "Connection parameters for Zabbix host",
                 "data": {
                     "ssl": "Use TLS",
                     "host": "Host",
                     "path": "Path (can be empty)",
                     "port": "Port",
                     "api_token": "API Token"
-                },
-                "description": "Connection parameters for Zabbix host"
+                }
             },
-            "sensors_services": {
+            "sensors": {
+                "description": "Setup Zabbix services as Home Assistant sensors. Sensor names will be prefixed with value specified below.",
                 "data": {
-                    "enabled": "Enable",
-                    "prefix": "Sensor prefix (default: zabbix hostname)"
-                },
-                "description": "Setup Zabbix services as Home Assistant sensors. All Zabbix services will be imported. Sensor names will be prefixed with value specified below (default: Zabbix hostname)"
+                    "prefix": "Base device name and sensor prefix (default: Zabbix)",
+                    "svcs": "Setup sensors based on Zabbix services",
+                    "prbs": "Setup sensors based on Zabbix problem tags"
+                }
             },
             "sensors_tagged_problems": {
+                "description": "Setup sensor that reflects zabbix tagged problems (Check 'Finished' when done)",
                 "data": {
                     "tag": "Zabbix problem tag name",
                     "value": "Zabbix problem tag value",
-                    "stop": "Finish adding Zabbix problem sensors"
-                },
-                "description": "Setup sensor that reflects zabbix tagged problems (leave empty if finished)"
+                    "stop": "Finished"
+                }
             }
         }
     }

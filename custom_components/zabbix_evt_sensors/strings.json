@@ -10,10 +10,11 @@
         },
         "description": "[%key:common::config_flow::description%]"
       },
-      "sensors_services": {
+      "sensors": {
         "data": {
-          "enabled": "[%key:common::config_flow::data::choose%]",
-          "prefix": "[%key:common::config_flow::data::prefix%]"
+          "prefix": "[%key:common::config_flow::data::prefix%]",
+          "svcs": "[%key:common::config_flow::data::choose%]",
+          "prbs": "[%key:common::config_flow::data::choose%]"
         },
         "description": "[%key:common::config_flow::description%]"
       },
@@ -21,7 +22,7 @@
         "data": {
           "tag": "[%key:common::config_flow::data::tag%]",
           "value": "[%key:common::config_flow::data::value%]",
-          "stop": "[%key:common::config_flow::data::value%]
+          "stop": "[%key:common::config_flow::data::value%]"
         },
         "description": "[%key:common::config_flow::description%]"
       }

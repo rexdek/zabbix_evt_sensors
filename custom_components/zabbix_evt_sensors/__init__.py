@@ -11,7 +11,7 @@ from homeassistant.const import CONF_API_TOKEN, CONF_HOST, CONF_PATH, CONF_PORT,
 from homeassistant.core import HomeAssistant
 from pyzabbix import ZabbixAPIException
 
-from .const import DOMAIN
+from .const import DOMAIN, CONFIG_KEY, SERVICES_KEY, PROBLEMS_KEY
 from .zabbix import Zbx
 
 urllib3.disable_warnings()
@@ -26,11 +26,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = await hass.async_add_executor_job(
         Zbx,
-        entry.data["conf"][CONF_HOST],
-        entry.data["conf"][CONF_API_TOKEN],
-        entry.data["conf"][CONF_PATH],
-        entry.data["conf"][CONF_PORT],
-        entry.data["conf"][CONF_SSL]
+        entry.data[CONFIG_KEY][CONF_HOST],
+        entry.data[CONFIG_KEY][CONF_API_TOKEN],
+        entry.data[CONFIG_KEY][CONF_PATH],
+        entry.data[CONFIG_KEY][CONF_PORT],
+        entry.data[CONFIG_KEY][CONF_SSL]
     )
     try:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
