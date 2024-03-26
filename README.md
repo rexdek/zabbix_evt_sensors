@@ -36,6 +36,8 @@ If you would like to use Home Assistant sensors based on Zabbix services, you ha
     - sensor.
     - prefix_from_config_flow_
     - either: "service_" or "problem_"
-    - zabbix service name or problem tag_value set (e.g. sensor.zabbix_service_network, sensor.zabbix_problem_class_os)
+    - zabbix service name or problem tag_value set
+
+    e.g. sensor.zabbix_service_network, sensor.zabbix_problem_class_os
 
     
