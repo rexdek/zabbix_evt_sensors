@@ -1,5 +1,5 @@
-title: Cayman theme
-description: Cayman is a clean, responsive theme for GitHub Pages.
+title: Zabbix Event Sensors
+description: Zabbix Event Sensors imports Zabbix problem events into Home Assistant as sensors.
 show_downloads: true
 google_analytics:
 theme: jekyll-theme-cayman
