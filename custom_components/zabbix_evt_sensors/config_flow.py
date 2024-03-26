@@ -10,7 +10,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.exceptions import HomeAssistantError
 from pyzabbix import ZabbixAPIException
 from requests.exceptions import ConnectionError
 from .const import DEFAULT_NAME, DOMAIN, CONFIG_KEY, PROBLEMS_KEY, SERVICES_KEY
@@ -134,20 +133,3 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_end_flow(self):
         return self.async_create_entry(title=DEFAULT_NAME, data=self.init_info)
-
-    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None):
-        if user_input is not None:
-            pass  # TODO: process user input
-
-        return self.async_show_form(
-            step_id="reconfigure",
-            data_schema=vol.Schema({vol.Required("input_parameter"): str}),
-        )
-
-
-class CannotConnect(HomeAssistantError):
-    """Error to indicate we cannot connect."""
-
-
-class InvalidAuth(HomeAssistantError):
-    """Error to indicate there is invalid auth."""
