@@ -107,6 +107,5 @@ class ZabbixUpdateCoordinator(DataUpdateCoordinator):
         self.zbx = zbx
 
     async def _async_update_data(self):
-        print("UPdate")
         return {SERVICES_KEY: await self.hass.async_add_executor_job(self.zbx.services),
                 PROBLEMS_KEY: await self.hass.async_add_executor_job(self.zbx.problems)}
