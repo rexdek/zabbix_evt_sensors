@@ -12,11 +12,12 @@
             "user": {
                 "description": "Connection parameters for Zabbix host",
                 "data": {
-                    "ssl": "Use TLS",
+                    "api_token": "API token",
                     "host": "Host",
                     "path": "Path (can be empty)",
                     "port": "Port",
-                    "api_token": "API Token"
+                    "scan_interval": "Data update interval in seconds",
+                    "ssl": "Use TLS"
                 }
             },
             "sensors": {

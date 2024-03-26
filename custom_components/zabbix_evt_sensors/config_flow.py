@@ -5,7 +5,7 @@ from typing import Any
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import (
-    CONF_API_TOKEN, CONF_HOST, CONF_PATH,
+    CONF_API_TOKEN, CONF_HOST, CONF_SCAN_INTERVAL, CONF_PATH,
     CONF_PORT, CONF_PREFIX, CONF_STOP, CONF_SSL
 )
 from homeassistant.core import HomeAssistant
@@ -23,8 +23,9 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_HOST, default="zabbix.rexkramer.de"): str,
         vol.Optional(CONF_PATH, default=""): str,
         vol.Required(CONF_PORT, default=443): int,
-        vol.Required(CONF_SSL, default=True): bool,
         vol.Required(CONF_API_TOKEN): str,
+        vol.Required(CONF_SSL, default=True): bool,
+        vol.Optional(CONF_SCAN_INTERVAL, default=3): int,
     }
 )
 

@@ -7,6 +7,7 @@ import logging
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -15,7 +16,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import DOMAIN, PROBLEMS_KEY, SERVICES_KEY
+from .const import DOMAIN, CONFIG_KEY, PROBLEMS_KEY, SERVICES_KEY
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ async def async_setup_entry(
         _LOGGER,
         hass.data[DOMAIN][entry.entry_id],
         name="Zabbix Data Coordinator",
-        update_interval=datetime.timedelta(seconds=3),
+        update_interval=datetime.timedelta(seconds=entry.data[CONFIG_KEY][CONF_SCAN_INTERVAL]),
     )
     await coordinator.async_config_entry_first_refresh()
     # import all Zabbix services as service sensors if enabled in config_flow
@@ -106,5 +107,6 @@ class ZabbixUpdateCoordinator(DataUpdateCoordinator):
         self.zbx = zbx
 
     async def _async_update_data(self):
+        print("UPdate")
         return {SERVICES_KEY: await self.hass.async_add_executor_job(self.zbx.services),
                 PROBLEMS_KEY: await self.hass.async_add_executor_job(self.zbx.problems)}
