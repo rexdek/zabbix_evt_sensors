@@ -19,7 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_HOST, default="zabbix.rexkramer.de"): str,
+        vol.Required(CONF_HOST, default="zabbix"): str,
         vol.Optional(CONF_PATH, default=""): str,
         vol.Required(CONF_PORT, default=443): int,
         vol.Required(CONF_API_TOKEN): str,
