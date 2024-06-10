@@ -87,7 +87,7 @@ class Zbx:
         """Map eids to ZbxEvents."""
         eidmap = {}
         raw_events = self.zapi.event.get(
-            eventids=eids, output=["name", "severity"], selectHosts=["name"]
+            eventids=eids, output=["eventid", "name", "severity"], selectHosts=["name"]
         )
         for event in raw_events:
             with contextlib.suppress(IndexError):
@@ -116,3 +116,11 @@ class Zbx:
     def services(self):
         """Output zabbix services."""
         return self._output(self._get_svcs())
+
+
+if __name__ == "__main__":
+    host = input("Zabbix Host: ")
+    api_token = input("Zabbix API Token: ")
+    z = Zbx(host, api_token)
+    print(z.problems())
+    print(z.services())
