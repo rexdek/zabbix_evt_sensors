@@ -42,11 +42,16 @@ class Zbx:
 
     def __init__(self, host, api_token, path="", port=443, ssl=True):
         """Initialize the class."""
+        self.host = host
+        self.api_token = api_token
+        self.path = path
+        self.port = port
+        self.ssl = ssl
         protocol = "https" if ssl else "http"
-        self.url = f"{protocol}://{host}:{port}/{path}"
+        self.url = f"{protocol}://{self.host}:{self.port}/{self.path}"
         self.zapi = ZabbixAPI(self.url)
         self.zapi.session.verify = False
-        self.zapi.login(api_token=api_token)
+        self.zapi.login(api_token=self.api_token)
         self.version = self.zapi.version.public
 
     def _get_taglist(self, tags):
