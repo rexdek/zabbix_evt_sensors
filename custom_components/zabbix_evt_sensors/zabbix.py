@@ -1,10 +1,7 @@
-"""Zabbix helper classes."""
-import contextlib
-from itertools import chain
 import logging
+from collections import defaultdict
 
 from pyzabbix.api import ZabbixAPI
-
 import urllib3
 
 urllib3.disable_warnings()
@@ -45,82 +42,78 @@ class Zbx:
 
     def __init__(self, host, api_token, path="", port=443, ssl=True):
         """Initialize the class."""
-        self.host = host
-        self.api_token = api_token
-        self.path = path
-        self.port = port
-        self.ssl = ssl
-        self.protocol = "https" if self.ssl else "http"
-        self.url = f"{self.protocol}://{self.host}:{self.port}/{self.path}"
+        protocol = "https" if ssl else "http"
+        self.url = f"{protocol}://{host}:{port}/{path}"
         self.zapi = ZabbixAPI(self.url)
         self.zapi.session.verify = False
-        self.zapi.login(api_token=self.api_token)
+        self.zapi.login(api_token=api_token)
         self.version = self.zapi.version.public
 
-    def _get_problems(self):
-        """Get Zabbix problems."""
-        problems = {}
-        raw_problems = self.zapi.problem.get(
-            output=["eventid"], selectTags=["tag", "value"]
+    def _get_taglist(self, tags):
+        return [f'{tag["tag"]}:{tag["value"]}' for tag in tags]
+
+    def _get_eidmap(self, eids):
+        """Map event IDs to host names."""
+        events = self.zapi.event.get(
+            eventids=eids,
+            output=["eventid"],
+            selectHosts=["name"]
         )
-        for problem in raw_problems:
-            taglist = [f'{tag["tag"]}:{tag["value"]}' for tag in problem["tags"]]
-            for tag in taglist:
-                if tag not in problems:
-                    problems[tag] = []
-                problems[tag] = [problem["eventid"]]
-        return problems
+        return {e["eventid"]: e["hosts"][0]["name"] for e in events}
+
+    def _get_problems(self):
+        """Get current problems grouped by tag."""
+        problems = defaultdict(list)
+        raw_problems = self.zapi.problem.get(
+            output=["eventid", "severity", "name"],
+            selectTags=["tag", "value"]
+        )
+
+        eids = [p["eventid"] for p in raw_problems]
+        eidmap = self._get_eidmap(eids)
+
+        for p in raw_problems:
+            eventid = p["eventid"]
+            host = eidmap.get(eventid, "N/A")
+            tags = p.get("tags", [])
+            for tag_key in self._get_taglist(tags):
+                problems[tag_key].append(
+                    (p["severity"], host, p["name"])
+                )
+
+        return dict(problems)
 
     def _get_svcs(self):
         """Get Zabbix service status."""
-        svcs = {}
+        svcs = defaultdict(list)
         raw_svcs = self.zapi.service.get(
-            output=["name"], selectParents="extend", selectProblemEvents=["eventid"]
+            output=["serviceid", "status", "description"],
+            selectParents="count",
+            selectTags="extend"
         )
-        # get top level services
-        raw_svcs = [service for service in raw_svcs if service["parents"] == []]
-        for svc in raw_svcs:
-            svcs[svc["name"]] = [prob["eventid"] for prob in svc["problem_events"]]
-        return svcs
-
-    def _get_eidmap(self, eids):
-        """Map eids to ZbxEvents."""
-        eidmap = {}
-        raw_events = self.zapi.event.get(
-            eventids=eids, output=["eventid", "name", "severity"], selectHosts=["name"]
-        )
-        for event in raw_events:
-            with contextlib.suppress(IndexError):
-                eidmap[event["eventid"]] = ZbxEvent(
-                    event["eventid"],
-                    event["hosts"][0]["name"],
-                    event["name"],
-                    event["severity"],
+        for service in raw_svcs:
+            if service["parents"] == "0":
+                tags = service.get("tags", [])
+                for tag_key in self._get_taglist(tags):
+                    svcs[tag_key].append(
+                        (service["status"], "N/A", service["description"])
                 )
-
-        return eidmap
-
-    def _output(self, data_dict):
-        """Output data."""
-        eids = list(chain.from_iterable(data_dict.values()))
-        eidmap = self._get_eidmap(eids)
-        result = {}
-        for key, values in data_dict.items():
-            result[key] = [eidmap[eid] for eid in values]
-        return result
+        return dict(svcs)
 
     def problems(self):
         """Output zabbix problems."""
-        return self._output(self._get_problems())
+        return self._get_problems()
 
     def services(self):
         """Output zabbix services."""
-        return self._output(self._get_svcs())
+        return self._get_svcs()
 
 
 if __name__ == "__main__":
-    host = input("Zabbix Host: ")
-    api_token = input("Zabbix API Token: ")
+    # host = input("Zabbix Host: ")
+    host = "zabbix.rexkramer.de"
+    # api_token = input("Zabbix API Token: ")
+    api_token = "3aad14ab5bd5bac434e6f16e5d44e0e4d8c9761fcf96b4071e062a8e89c7a564"
     z = Zbx(host, api_token)
     print(z.problems())
     print(z.services())

@@ -26,21 +26,35 @@ async def async_setup_entry(
 ) -> None:
     """Set up the config entry for zabbix sensor."""
     _LOGGER.info("Instantiating DataUpdateCoordinator")
+    zbx_config = hass.data[DOMAIN][entry.entry_id]
+    scan_interval = entry.data[CONFIG_KEY][CONF_SCAN_INTERVAL]
+
     coordinator = ZabbixUpdateCoordinator(
-        hass,
-        _LOGGER,
-        hass.data[DOMAIN][entry.entry_id],
+        hass=hass,
+        logger=_LOGGER,
+        zbx=zbx_config,
         name="Zabbix Data Coordinator",
-        update_interval=datetime.timedelta(seconds=entry.data[CONFIG_KEY][CONF_SCAN_INTERVAL]),
+        update_interval=datetime.timedelta(seconds=scan_interval),
     )
     await coordinator.async_config_entry_first_refresh()
-    # import all Zabbix services as service sensors if enabled in config_flow
-    if entry.data[SERVICES_KEY]:
-        async_add_entities([ZabbixServiceSensor(coordinator, zbx_svc, entry.data["prefix"])
-                            for zbx_svc in coordinator.data[SERVICES_KEY]])
-    # import only configured tag:value pairs as problem sensors
-    for zbx_prb in entry.data[PROBLEMS_KEY]:
-        async_add_entities([ZabbixProblemSensor(coordinator, zbx_prb, entry.data["prefix"])])
+
+    prefix = entry.data.get("prefix", "Zabbix")
+
+    sensors = []
+
+    if entry.data.get(SERVICES_KEY):
+        sensors.extend(
+            ZabbixServiceSensor(coordinator, svc, prefix)
+            for svc in coordinator.data[SERVICES_KEY]
+        )
+
+    if entry.data.get(PROBLEMS_KEY):
+        sensors.extend(
+            ZabbixProblemSensor(coordinator, prob, prefix)
+            for prob in entry.data[PROBLEMS_KEY]
+        )
+
+    async_add_entities(sensors)
 
 
 class ZabbixSensor(CoordinatorEntity, SensorEntity):
@@ -56,8 +70,8 @@ class ZabbixSensor(CoordinatorEntity, SensorEntity):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._attr_name = zbx_evt
-        self._attr_native_value = None
         self._attr_unique_id = f"zbx_{coordinator.zbx.host}_{self._attr_name}"
+        self._attr_native_value = None
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f'{coordinator.zbx.host}_{self.zabbix_sensor_type_name}')},
             name=f'{prefix} {self.zabbix_sensor_type_name}',
@@ -66,18 +80,18 @@ class ZabbixSensor(CoordinatorEntity, SensorEntity):
             sw_version=coordinator.zbx.zapi.version.public,
         )
         self._attr_should_poll = True
-        _LOGGER.info("Created Zabbix sensor entity zbx_%s", self._attr_name)
+        _LOGGER.debug("Created Zabbix %s sensor: %s", self.zabbix_sensor_type_name, self._attr_unique_id)
 
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        _LOGGER.info("Updating entity %s state", self.name)
-        entity_values = self.coordinator.data[self.zabbix_sensor_type_key].get(self._attr_name, [])
-        entity_display_values = [f"{e.host}: {e.name} ({e.severity})" for e in entity_values]
-        self._attr_extra_state_attributes = {"events": entity_display_values}
-        states = [e.severity for e in entity_values]
-        state = max(states) if states else -1
-        self._attr_native_value = state
+        _LOGGER.debug("Updating entity %s state", self.name)
+
+        events = self.coordinator.data[self.zabbix_sensor_type_key].get(self._attr_name, [])
+        self._attr_extra_state_attributes = {
+            "events": [f"{e.host}: {e.name} ({e.severity})" for e in events]
+        }
+        self._attr_native_value = max((e.severity for e in events), default=-1)
         self.async_write_ha_state()
 
 
@@ -107,5 +121,7 @@ class ZabbixUpdateCoordinator(DataUpdateCoordinator):
         self.zbx = zbx
 
     async def _async_update_data(self):
-        return {SERVICES_KEY: await self.hass.async_add_executor_job(self.zbx.services),
-                PROBLEMS_KEY: await self.hass.async_add_executor_job(self.zbx.problems)}
+        return {
+            SERVICES_KEY: await self.hass.async_add_executor_job(self.zbx.services),
+            PROBLEMS_KEY: await self.hass.async_add_executor_job(self.zbx.problems)
+        }
