@@ -1,18 +1,28 @@
 """Config flow for zabbix_evt_sensors integration."""
 from __future__ import annotations
+
 import logging
 from typing import Any
+
+from pyzabbix import ZabbixAPIException
+from requests.exceptions import ConnectionError
 import voluptuous as vol
+
 from homeassistant import config_entries
 from homeassistant.const import (
-    CONF_API_TOKEN, CONF_HOST, CONF_SCAN_INTERVAL, CONF_PATH,
-    CONF_PORT, CONF_PREFIX, CONF_STOP, CONF_SSL
+    CONF_API_TOKEN,
+    CONF_HOST,
+    CONF_PATH,
+    CONF_PORT,
+    CONF_PREFIX,
+    CONF_SCAN_INTERVAL,
+    CONF_SSL,
+    CONF_STOP,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
-from pyzabbix import ZabbixAPIException
-from requests.exceptions import ConnectionError
-from .const import DEFAULT_NAME, DOMAIN, CONFIG_KEY, PROBLEMS_KEY, SERVICES_KEY
+
+from .const import CONFIG_KEY, DEFAULT_NAME, DOMAIN, PROBLEMS_KEY, SERVICES_KEY
 from .zabbix import Zbx
 
 _LOGGER = logging.getLogger(__name__)
@@ -66,7 +76,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize the config flow."""
         super().__init__()
         self.init_info: dict[str, Any] = {CONFIG_KEY: {}, "prefix": None, SERVICES_KEY: False, PROBLEMS_KEY: []}
 
@@ -105,8 +116,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self.init_info[SERVICES_KEY] = user_input[SERVICES_KEY]
             if user_input[PROBLEMS_KEY]:
                 return await self.async_step_sensors_tagged_problems()
-            else:
-                return await self.async_end_flow()
+            return await self.async_end_flow()
 
         return self.async_show_form(
             step_id="sensors", data_schema=STEP_SENSOR_DATA_SCHEMA, errors=errors
@@ -124,12 +134,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
             if user_input[CONF_STOP]:
                 return await self.async_end_flow()
-            else:
-                return await self.async_step_sensors_tagged_problems()
+            return await self.async_step_sensors_tagged_problems()
 
         return self.async_show_form(
             step_id="sensors_tagged_problems", data_schema=STEP_SENSOR_TAGGED_PROBLEM_DATA_SCHEMA, errors=errors
         )
 
     async def async_end_flow(self):
+        """End the flow."""
         return self.async_create_entry(title=DEFAULT_NAME, data=self.init_info)

@@ -1,12 +1,23 @@
 """The zabbix_evt_sensors integration."""
 from __future__ import annotations
+
 import logging
-import urllib3
-from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
-from homeassistant.const import CONF_API_TOKEN, CONF_HOST, CONF_PATH, CONF_PORT, CONF_SSL, Platform
-from homeassistant.core import HomeAssistant
+
 from pyzabbix import ZabbixAPIException
-from .const import DOMAIN, CONFIG_KEY, SERVICES_KEY, PROBLEMS_KEY
+import urllib3
+
+from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
+from homeassistant.const import (
+    CONF_API_TOKEN,
+    CONF_HOST,
+    CONF_PATH,
+    CONF_PORT,
+    CONF_SSL,
+    Platform,
+)
+from homeassistant.core import HomeAssistant
+
+from .const import CONFIG_KEY, DOMAIN
 from .zabbix import Zbx
 
 urllib3.disable_warnings()
@@ -30,7 +41,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     except ZabbixAPIException as e:
-        raise ConfigEntryNotReady(e)
+        raise ConfigEntryNotReady from e
     return True
 
 

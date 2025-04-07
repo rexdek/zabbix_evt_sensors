@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import DOMAIN, CONFIG_KEY, PROBLEMS_KEY, SERVICES_KEY
+from .const import CONFIG_KEY, DOMAIN, PROBLEMS_KEY, SERVICES_KEY
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -89,18 +89,22 @@ class ZabbixSensor(CoordinatorEntity, SensorEntity):
 
         events = self.coordinator.data[self.zabbix_sensor_type_key].get(self._attr_name, [])
         self._attr_extra_state_attributes = {
-            "events": [f"{e.host}: {e.info} ({e.severity})" for e in events]
+            "events": [f"{e.host}: {e.name} ({e.severity})" for e in events]
         }
         self._attr_native_value = max((e.severity for e in events), default=-1)
         self.async_write_ha_state()
 
 
 class ZabbixServiceSensor(ZabbixSensor):
+    """Zabbix Service Sensor."""
+
     zabbix_sensor_type_name = "Service"
     zabbix_sensor_type_key = SERVICES_KEY
 
 
 class ZabbixProblemSensor(ZabbixSensor):
+    """Zabbix Problem Sensor."""
+
     zabbix_sensor_type_name = "Problem"
     zabbix_sensor_type_key = PROBLEMS_KEY
 
