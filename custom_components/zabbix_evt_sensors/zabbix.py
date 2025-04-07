@@ -12,12 +12,14 @@ _LOGGER = logging.getLogger(__name__)
 class ZbxEvent:
     """ZbcEvent Class."""
 
-    def __init__(self, eid, host, name, severity):
+    def __init__(self, eid, name, severity, tags, host=None):
         """Initialize the class."""
         self.eid = eid
-        self.host = host
         self.name = name
         self.severity = severity
+        self.tags = tags
+        self.host = host
+        self.scope = 'problem' if host else 'service'
 
     def __eq__(self, other):
         """Check for equality."""
@@ -30,11 +32,11 @@ class ZbxEvent:
 
     def __str__(self):
         """Represent string."""
-        return f"{self.host}: {self.name} ({self.severity})"
+        return f"{self.host or self.scope}: {self.name} ({self.severity})"
 
     def __repr__(self):
         """Representation."""
-        return f"<ZbxEvent: {self.eid},{self.host},{self.name},{self.severity}>"
+        return f"<ZbxEvent: {self.eid}, {self.host or self.scope}, {self.name}, {self.severity}>"
 
 
 class Zbx:
@@ -53,6 +55,9 @@ class Zbx:
         self.zapi.session.verify = False
         self.zapi.login(api_token=self.api_token)
         self.version = self.zapi.version.public
+        self._by_tag = defaultdict(list)
+        self._by_hosts = defaultdict(list)
+        self._by_services = defaultdict(list)
 
     def _get_taglist(self, tags):
         return [f'{tag["tag"]}:{tag["value"]}' for tag in tags]
@@ -66,31 +71,30 @@ class Zbx:
         )
         return {e["eventid"]: e["hosts"][0]["name"] for e in events}
 
-    def _get_problems(self):
+    def _update_problems(self):
         """Get current problems grouped by tag."""
-        problems = defaultdict(list)
+        self._by_hosts.clear()
         raw_problems = self.zapi.problem.get(
             output=["eventid", "severity", "name"],
             selectTags=["tag", "value"]
         )
-
         eids = [p["eventid"] for p in raw_problems]
         eidmap = self._get_eidmap(eids)
 
         for p in raw_problems:
-            eventid = p["eventid"]
-            host = eidmap.get(eventid, "N/A")
+            eid = p["eventid"]
+            host = eidmap.get(eid, "N/A")
+            info = p["name"]
+            severity = p["severity"]
             tags = p.get("tags", [])
+            zbx_event = ZbxEvent(eid, info, severity, tags, host=host)
+            self._by_hosts[host].append(zbx_event)
             for tag_key in self._get_taglist(tags):
-                problems[tag_key].append(
-                    (p["severity"], host, p["name"])
-                )
+                self._by_tag[tag_key].append(zbx_event)
 
-        return dict(problems)
-
-    def _get_svcs(self):
+    def _update_svcs(self):
         """Get Zabbix service status."""
-        svcs = defaultdict(list)
+        self._by_services.clear()
         raw_svcs = self.zapi.service.get(
             output=["serviceid", "status", "description"],
             selectParents="count",
@@ -98,20 +102,25 @@ class Zbx:
         )
         for service in raw_svcs:
             if service["parents"] == "0":
+                eid = service["serviceid"]
                 tags = service.get("tags", [])
+                severity = service["status"]
+                info = service["description"]
+                zbx_event = ZbxEvent(eid, info, severity, tags)
+                self._by_services[zbx_event.scope].append(zbx_event)
                 for tag_key in self._get_taglist(tags):
-                    svcs[tag_key].append(
-                        (service["status"], "N/A", service["description"])
-                )
-        return dict(svcs)
+                    self._by_tag[tag_key].append(zbx_event)
+
+    def _get_by_tag(self):
+        tags = [tag for tag in event.tags for event in self._by_hosts.values()]
 
     def problems(self):
         """Output zabbix problems."""
-        return self._get_problems()
+        self._update_problems()
 
     def services(self):
         """Output zabbix services."""
-        return self._get_svcs()
+        return self._update_svcs()
 
 
 if __name__ == "__main__":
@@ -120,5 +129,8 @@ if __name__ == "__main__":
     # api_token = input("Zabbix API Token: ")
     api_token = "3aad14ab5bd5bac434e6f16e5d44e0e4d8c9761fcf96b4071e062a8e89c7a564"
     z = Zbx(host, api_token)
-    print(z.problems())
-    print(z.services())
+    z._update_problems()
+    z._update_svcs()
+    for k, v in z._by_tag.items():
+        print(k, "\n   ", v)
+
