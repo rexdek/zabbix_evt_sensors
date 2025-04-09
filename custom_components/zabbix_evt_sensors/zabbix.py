@@ -93,7 +93,7 @@ class Zbx:
             tags = p.get("tags", [])
             zbx_event = ZbxEvent(eid, info, severity, tags, host=host)
             for tag_key in self._get_taglist(tags):
-                self._problems_by_tag[tag_key].append(zbx_event)
+                self._problems_by_tag[tag_key].append(vars(zbx_event))
 
     def _update_svcs(self):
         """Get Zabbix service status."""
@@ -113,14 +113,14 @@ class Zbx:
                 name = service["description"]
                 zbx_event = ZbxEvent(eid, name, severity, tags, info=info)
                 for tag_key in self._get_taglist(tags):
-                    self._services_by_tag[tag_key].append(zbx_event)
+                    self._services_by_tag[tag_key].append(vars(zbx_event))
 
     def problems(self):
         """Output zabbix problems."""
         self._update_problems()
-        return self._problems_by_tag
+        return dict(self._problems_by_tag)
 
     def services(self):
         """Output zabbix services."""
         self._update_svcs()
-        return self._services_by_tag
+        return dict(self._services_by_tag)
