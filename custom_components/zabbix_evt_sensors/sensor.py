@@ -89,7 +89,7 @@ class ZabbixSensor(CoordinatorEntity, SensorEntity):
 
         events = self.coordinator.data[self.zabbix_sensor_type_key].get(self._attr_name, [])
         self._attr_extra_state_attributes = {
-            "events": {key: vars(zbx_event) for key, zbx_event in events}
+            "events": {zbx_event.host: vars(zbx_event) for zbx_event in events}
         }
         self._attr_native_value = max((e.severity for e in events), default=-1)
         self.async_write_ha_state()
