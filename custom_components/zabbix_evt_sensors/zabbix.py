@@ -17,13 +17,14 @@ _LOGGER = logging.getLogger(__name__)
 class ZbxEvent:
     """ZbcEvent Class."""
 
-    def __init__(self, eid, name, severity, tags, host=None) -> None:
+    def __init__(self, eid, name, severity, tags, host=None, info=None) -> None:
         """Initialize the class."""
         self.eid = eid
         self.name = name
         self.severity = severity
         self.tags = tags
-        self.host = host or 'service'
+        self.host = host or 'ZabbixService'
+        self.info = info or []
 
     def __eq__(self, other):
         """Check for equality."""
@@ -36,11 +37,11 @@ class ZbxEvent:
 
     def __str__(self):
         """Represent string."""
-        return f"{self.host}: {self.name} ({self.severity})"
+        return f"{self.host}: {self.name} ({self.severity}, {self.info})"
 
     def __repr__(self):
         """Representation."""
-        return f"<ZbxEvent: {self.eid}, {self.host}, {self.name}, {self.severity}>"
+        return f"<ZbxEvent: {self.eid}, {self.host}, {self.name}, {self.severity}, {self.info}>"
 
 
 class Zbx:
@@ -100,15 +101,17 @@ class Zbx:
         raw_svcs = self.zapi.service.get(
             output=["serviceid", "status", "description"],
             selectParents="count",
+            selectChildren=["name", "status"],
             selectTags="extend"
         )
         for service in raw_svcs:
             if service["parents"] == "0":
                 eid = service["serviceid"]
+                info = service["children"],
                 tags = service.get("tags", [])
                 severity = service["status"]
-                info = service["description"]
-                zbx_event = ZbxEvent(eid, info, severity, tags)
+                name = service["description"]
+                zbx_event = ZbxEvent(eid, name, severity, tags, info=info)
                 for tag_key in self._get_taglist(tags):
                     self._services_by_tag[tag_key].append(zbx_event)
 
