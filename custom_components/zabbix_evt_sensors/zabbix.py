@@ -6,10 +6,9 @@ including event handling and API integration.
 from collections import defaultdict
 import logging
 
-from pyzabbix.api import ZabbixAPI
-import urllib3
+import ssl
+from zabbix_utils import ZabbixAPI
 
-urllib3.disable_warnings()
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,19 +46,23 @@ class ZbxEvent:
 class Zbx:
     """Zbx Class."""
 
-    def __init__(self, host, api_token, path="", port=443, ssl=True) -> None:
+    def __init__(self, host, api_token, path="", port=443, use_ssl=True) -> None:
         """Initialize the class."""
         self.host = host
         self.api_token = api_token
         self.path = path
         self.port = port
-        self.ssl = ssl
-        protocol = "https" if ssl else "http"
+        protocol = "https" if use_ssl else "http"
         self.url = f"{protocol}://{self.host}:{self.port}/{self.path}"
-        self.zapi = ZabbixAPI(self.url)
-        self.zapi.session.verify = False
-        self.zapi.login(api_token=self.api_token)
-        self.version = self.zapi.version.public
+
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        self.zapi = ZabbixAPI(self.url, ssl_context=ctx)
+        self.zapi.login(token=self.api_token)
+
+        self.api_version = self.zapi.api_version()
         self._problems_by_tag = defaultdict(list)
         self._services_by_tag = defaultdict(list)
 
@@ -124,3 +127,12 @@ class Zbx:
         """Output zabbix services."""
         self._update_svcs()
         return dict(self._services_by_tag)
+
+
+if __name__ == "__main__":
+    host = input("Host: ")
+    token = input("Token: ")
+    zbx = Zbx(host, token)
+    zbx._update_problems()
+    print(zbx.problems())
+    print(zbx.services())
