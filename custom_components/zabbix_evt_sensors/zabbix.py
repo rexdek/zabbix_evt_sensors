@@ -62,7 +62,7 @@ class Zbx:
         self.zapi = ZabbixAPI(self.url, ssl_context=ctx)
         self.zapi.login(token=self.api_token)
 
-        self.api_version = self.zapi.api_version()
+        self.api_version = str(self.zapi.api_version())
         self._problems_by_tag = defaultdict(list)
         self._services_by_tag = defaultdict(list)
 
