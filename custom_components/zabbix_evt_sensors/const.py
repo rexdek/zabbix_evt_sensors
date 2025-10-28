@@ -2,6 +2,8 @@
 
 DEFAULT_NAME = "Zabbix Event Sensors"
 DOMAIN = "zabbix_evt_sensors"
-CONFIG_KEY = "conf"
-SERVICES_KEY = "svcs"
-PROBLEMS_KEY = "prbs"
+ZBX_HOST_KEY = "host"
+ZBX_SENSOR_PREFIX = "zabbix"
+ZBX_PROBLEMS_KEY = "prbs"
+ZBX_SERVICES_KEY = "svcs"
+ZBX_TAG_VALUE_LIST = "zbx_tag_value_list"

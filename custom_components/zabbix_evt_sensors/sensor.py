@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import CONFIG_KEY, DOMAIN, PROBLEMS_KEY, SERVICES_KEY
+from .const import DOMAIN, ZBX_HOST_KEY, ZBX_SENSOR_PREFIX, ZBX_PROBLEMS_KEY, ZBX_SERVICES_KEY, ZBX_TAG_VALUE_LIST
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ async def async_setup_entry(
     """Set up the config entry for zabbix sensor."""
     _LOGGER.info("Instantiating DataUpdateCoordinator")
     zbx_config = hass.data[DOMAIN][entry.entry_id]
-    scan_interval = entry.data[CONFIG_KEY][CONF_SCAN_INTERVAL]
+    scan_interval = entry.data[ZBX_HOST_KEY][CONF_SCAN_INTERVAL]
 
     coordinator = ZabbixUpdateCoordinator(
         hass=hass,
@@ -38,20 +38,20 @@ async def async_setup_entry(
     )
     await coordinator.async_config_entry_first_refresh()
 
-    prefix = entry.data.get("prefix", "Zabbix")
+    prefix = entry.data.get(ZBX_SENSOR_PREFIX)
 
     sensors = []
 
-    if entry.data.get(SERVICES_KEY):
+    if entry.data.get(ZBX_SERVICES_KEY):
         sensors.extend(
             ZabbixServiceSensor(coordinator, svc, prefix)
-            for svc in coordinator.data[SERVICES_KEY]
+            for svc in coordinator.data[ZBX_SERVICES_KEY]
         )
 
-    if entry.data.get(PROBLEMS_KEY):
+    if entry.data.get(ZBX_PROBLEMS_KEY):
         sensors.extend(
             ZabbixProblemSensor(coordinator, prob, prefix)
-            for prob in entry.data[PROBLEMS_KEY]
+            for prob in entry.data[ZBX_TAG_VALUE_LIST]
         )
 
     async_add_entities(sensors)
@@ -79,7 +79,7 @@ class ZabbixSensor(CoordinatorEntity, SensorEntity):
             manufacturer="Zabbix SIA",
             sw_version=str(coordinator.zbx.api_version),
         )
-        self._attr_should_poll = True
+        self._attr_should_poll = False
         _LOGGER.debug("Created Zabbix %s sensor: %s", self.zabbix_sensor_type_name, self._attr_unique_id)
 
     @callback
@@ -99,14 +99,14 @@ class ZabbixServiceSensor(ZabbixSensor):
     """Zabbix Service Sensor."""
 
     zabbix_sensor_type_name = "Service"
-    zabbix_sensor_type_key = SERVICES_KEY
+    zabbix_sensor_type_key = ZBX_SERVICES_KEY
 
 
 class ZabbixProblemSensor(ZabbixSensor):
     """Zabbix Problem Sensor."""
 
     zabbix_sensor_type_name = "Problem"
-    zabbix_sensor_type_key = PROBLEMS_KEY
+    zabbix_sensor_type_key = ZBX_PROBLEMS_KEY
 
 
 class ZabbixUpdateCoordinator(DataUpdateCoordinator):
@@ -126,6 +126,6 @@ class ZabbixUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         return {
-            SERVICES_KEY: await self.hass.async_add_executor_job(self.zbx.services),
-            PROBLEMS_KEY: await self.hass.async_add_executor_job(self.zbx.problems)
+            ZBX_SERVICES_KEY: await self.hass.async_add_executor_job(self.zbx.services),
+            ZBX_PROBLEMS_KEY: await self.hass.async_add_executor_job(self.zbx.problems)
         }

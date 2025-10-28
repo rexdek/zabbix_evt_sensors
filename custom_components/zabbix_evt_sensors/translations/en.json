@@ -6,7 +6,8 @@
     "error": {
       "invalid_auth": "Zabbix failure, probably wrong token",
       "cannot_connect": "HTTP connection failure",
-      "unknown": "Unexpected error"
+      "unknown": "Unexpected error",
+      "tag_required_or_stop": "Enter a tag or press Stop"
     },
     "step": {
       "user": {

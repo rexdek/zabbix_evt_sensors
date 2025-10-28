@@ -76,7 +76,7 @@ class Zbx:
             output=["eventid"],
             selectHosts=["name"]
         )
-        return {e["eventid"]: e["hosts"][0]["name"] for e in events}
+        return {e["eventid"]: (e["hosts"][0]["name"] if e.get("hosts") else "N/A") for e in events}
 
     def _update_problems(self):
         """Get current problems grouped by tag."""
@@ -108,9 +108,9 @@ class Zbx:
             selectTags="extend"
         )
         for service in raw_svcs:
-            if service["parents"] == "0":
+            if int(service["parents"]) == 0:
                 eid = service["serviceid"]
-                info = service["children"],
+                info = service["children"]
                 tags = service.get("tags", [])
                 severity = service["status"]
                 name = service["description"]
@@ -133,6 +133,6 @@ if __name__ == "__main__":
     host = input("Host: ")
     token = input("Token: ")
     zbx = Zbx(host, token)
-    zbx._update_problems()
-    print(zbx.problems())
-    print(zbx.services())
+    #zbx._update_problems()
+    #print(zbx.problems())
+    #print(zbx.services())
