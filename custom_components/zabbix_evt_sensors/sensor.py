@@ -77,7 +77,7 @@ class ZabbixSensor(CoordinatorEntity, SensorEntity):
             name=f'{prefix} {self.zabbix_sensor_type_name}',
             configuration_url=coordinator.zbx.url,
             manufacturer="Zabbix SIA",
-            sw_version=coordinator.zbx.zapi.api_version.public,
+            sw_version=str(coordinator.zbx.api_version),
         )
         self._attr_should_poll = True
         _LOGGER.debug("Created Zabbix %s sensor: %s", self.zabbix_sensor_type_name, self._attr_unique_id)
