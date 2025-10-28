@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from pyzabbix import ZabbixAPIException
+from zabbix_utils.exceptions import APIRequestError
 from requests.exceptions import ConnectionError
 import voluptuous as vol
 
@@ -91,7 +91,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._abort_if_unique_id_configured()
             try:
                 await validate_input(self.hass, user_input)
-            except ZabbixAPIException:
+            except APIRequestError:
                 errors["base"] = "invalid_auth"
             except ConnectionError:
                 errors["base"] = "cannot_connect"

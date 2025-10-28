@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import logging
 
-from pyzabbix import ZabbixAPIException
 import urllib3
 
-from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
+from zabbix_utils.exceptions import APIRequestError
+rom homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
 from homeassistant.const import (
     CONF_API_TOKEN,
     CONF_HOST,
@@ -40,7 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
     try:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    except ZabbixAPIException as e:
+    except APIRequestError as e:
         raise ConfigEntryNotReady from e
     return True
 
