@@ -6,7 +6,7 @@ import logging
 import urllib3
 
 from zabbix_utils.exceptions import APIRequestError
-rom homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
+from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
 from homeassistant.const import (
     CONF_API_TOKEN,
     CONF_HOST,
