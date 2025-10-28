@@ -11,6 +11,6 @@
   "issue_tracker": "https://github.com/rexdek/zabbix_evt_sensors/issues",
   "requirements": ["zabbix-utils==2.0.3"],
   "ssdp": [],
-  "version": "2.0.1",
+  "version": "2.0.2",
   "zeroconf": []
 }
